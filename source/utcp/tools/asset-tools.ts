@@ -1,9 +1,7 @@
-import packageJSON from '../../../package.json';
-import sharp from 'sharp';
 import fs from 'fs-extra';
 import { utcpTool } from '../decorators';
 import { AssetInfo, AssetOperationOption } from '@cocos/creator-types/editor/packages/asset-db/@types/public';
-import { AssetTreeItemSchema, IAssetTreeItem, Base64ImageSchema, IBase64Image, SuccessIndicatorSchema, ISuccessIndicator, InstanceReferenceSchema, IInstanceReference } from '../schemas';
+import { AssetTreeItemSchema, IAssetTreeItem, InstanceReferenceSchema, IInstanceReference } from '../schemas';
 import path, { basename, extname } from 'path';
 import os from 'os';
 
@@ -365,126 +363,6 @@ export class AssetTools {
         return { reference: { id: result?.uuid ?? '', type: result?.type ?? '' } };
     }
 
-    @utcpTool(
-        'assetGetPreview',
-        'Returns preview image of the asset (Prefab, Image, Model or Material is supported). IMPORTANT: To visualize the image, you must return the result of this function DIRECTLY as the final value of your code, do NOT wrap it in an object.',
-        {
-            type: 'object',
-            properties: {
-                reference: InstanceReferenceSchema,
-                imageSize: { type: 'number', description: 'Size of the preview image (square)', default: 512 },
-                jpegQuality: { type: 'integer', description: 'JPEG Quality of the preview image', minimum: 40, maximum: 100, default: 80 },
-                transparentColor: { type: 'object', properties: { r: { type: 'integer', minimum: 0, maximum: 255 }, g: { type: 'integer', minimum: 0, maximum: 255 }, b: { type: 'integer', minimum: 0, maximum: 255 } }, required: ['r', 'g', 'b'], description: 'Background color for transparent images in RGB format' }
-            },
-            required: ['reference']
-        },
-        Base64ImageSchema, "GET", ['asset', 'preview', 'screenshot']
-    )
-    async assetGetPreview(args: { reference: IInstanceReference, imageSize?: number, jpegQuality?: number, transparentColor?: { r: number, g: number, b: number } }): Promise<IBase64Image> {
-        const info = await Editor.Message.request('asset-db', 'query-asset-info', args.reference.id);
-        if (!info) {
-            throw new Error(`Asset ${args.reference.id} not found.`);
-        }
-        if (!info.importer) {
-            throw new Error(`Asset ${args.reference.id} has no importer and cannot be previewed.`);
-        }
-
-        args.imageSize = args.imageSize || 512;
-        args.jpegQuality = args.jpegQuality || 80;
-        args.transparentColor = args.transparentColor || { r: 0, g: 0, b: 0 };
-        let importer = info.importer;
-
-        const supportedImporters = [
-            'erp-texture-cube',
-            'image',
-            'sprite-frame',
-            'texture',
-            'fbx',
-            'gltf',
-            'gltf-mesh',
-            'prefab',
-            'material',
-            'spine',
-            'gltf-skeleton',
-            'scene'
-        ];
-
-        if (!supportedImporters.includes(importer)) {
-            throw new Error(`Asset preview not supported for asset type: ${info.type}`);
-        }
-
-        if (importer === 'fbx' || importer === 'gltf') {
-            const mesh = Object.values(info.subAssets).find((sub: any) => sub.importer === 'gltf-mesh');
-            if (!mesh) {
-                throw new Error(`Asset ${args.reference.id} has no gltf-mesh sub-asset for preview.`);
-            }
-            args.reference.id = mesh.uuid;
-            importer = 'gltf-mesh';
-        }
-
-        let sourcePath: string | null = null;
-
-        if (importer === 'gltf-mesh' || importer === 'mesh') {
-            sourcePath = (await Editor.Message.request('asset-db', 'query-asset-thumbnail', args.reference.id, "origin") as any).value;
-        } else if (['erp-texture-cube', 'image', 'sprite-frame', 'texture'].includes(importer)) {
-            let fileUuid = args.reference.id;
-            if (args.reference.id.includes('@')) {
-                fileUuid = args.reference.id.split('@')[0];
-            }
-
-            const fileInfo = await Editor.Message.request('asset-db', 'query-asset-info', fileUuid);
-            if (fileInfo && fileInfo.file) {
-                sourcePath = fileInfo.file;
-            }
-        }
-
-        if (sourcePath && fs.existsSync(sourcePath)) {
-            try {
-                const image = sharp(sourcePath);
-                const metadata = await image.metadata();
-                const requestedSize = args.imageSize || 512;
-                let processed = image;
-
-                if (
-                    (metadata.width && metadata.width > requestedSize) ||
-                    (metadata.height && metadata.height > requestedSize)
-                ) {
-                    processed = processed.resize(requestedSize, requestedSize, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } });
-                }
-
-                let buffer;
-                if ((metadata.format === 'png' || metadata.hasAlpha)) {
-                    buffer = await processed.flatten({ background: args.transparentColor })
-                        .jpeg({ quality: args.jpegQuality || 80 })
-                        .toBuffer();
-                } else {
-                    buffer = await processed
-                        .jpeg({ quality: args.jpegQuality || 80 })
-                        .toBuffer();
-                }
-                return { type: "image", data: buffer.toString('base64'), mimeType: "image/jpeg" };
-            } catch (e) {
-                console.error(`Failed to process image from ${sourcePath} with sharp:`, e);
-            }
-        }
-
-        // Open panel to ensure renderer process is alive
-        await Editor.Panel.openBeside('scene', `${packageJSON.name}.preview`);
-
-        let base64Image: string;
-        try {
-            // Request generation
-            base64Image = await Editor.Message.request(packageJSON.name, 'generate-preview', args.reference.id, args.imageSize || 512, args.imageSize || 512, (args.jpegQuality || 80) / 100);
-        } finally {
-            // Close panel
-            await Editor.Panel.close(`${packageJSON.name}.preview`);
-        }
-
-        if (!base64Image) {
-            throw new Error(`Failed to generate preview for asset ${args.reference.id}.`);
-        }
-        return { type: "image", data: base64Image, mimeType: "image/jpeg" };
-    }
 
     private generateTypescriptClassTemplate(className: string): string {
         return `import { _decorator, Component, Node } from 'cc';

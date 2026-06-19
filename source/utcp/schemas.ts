@@ -2,18 +2,6 @@ import { JsonSchema } from '@utcp/sdk';
 
 // -=-=-=-=-=- interfaces for different result types -=-=-=-=-=-
 
-export interface IBase64Image {
-    type: "image";
-    data: string;
-    mimeType: string;
-}
-
-export interface IBase64Audio {
-    type: "audio";
-    data: string;
-    mimeType: string;
-}
-
 export interface ISuccessIndicator {
     success: boolean;
     error?: string;
@@ -44,8 +32,6 @@ export interface ISceneTreeItem {
 
 export const InstanceReferenceSchema: JsonSchema = { type: 'object', properties: { id: { type: 'string' }, type: { type: 'string' } }, required: ['id'] };
 export const SuccessIndicatorSchema: JsonSchema = { type: 'object', properties: { success: { type: 'boolean' }, error: { type: 'string'} }, required: ['success'] };
-export const Base64ImageSchema: JsonSchema = { type: 'object', properties: { type: { type: 'string', const: "image" }, data: { type: 'string' }, mimeType: { type: 'string' } }, required: ['type', 'data', 'mimeType'] };
-
 export const AssetTreeItemSchema: JsonSchema = {
     type: 'object',
     properties: {

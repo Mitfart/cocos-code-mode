@@ -24,15 +24,13 @@ You can read more about Code Mode concept in papers from [Anthropic](https://www
 
 ## Tools
 
-![Tools <> UI Mapping](tools_screenshot.jpg)
-
 | Category | Tools | Purpose |
 |----------|-------|---------|
 | **Scene** | `nodeGetTree`, `nodeGetAtPath`, `nodeCreate`, `nodeCreatePrimitive`, `nodeOperate` | Navigate and build scene hierarchy |
 | **Components** | `nodeComponentsGet`, `nodeComponentAdd`, `nodeComponentRemove`, `nodeGetAvailableComponentTypes` | Attach, remove, and discover components |
 | **Inspector** | `inspectorGetInstanceDefinition`, `inspectorGetSettingsDefinition`, `inspectorGetInstanceProperties`, `inspectorGetSettingsProperties`, `inspectorSetInstanceProperties`, `inspectorSetSettingsProperties` | Introspect types and read/write properties |
-| **Assets** | `assetGetTree`, `assetGetAtPath`, `assetCreate`, `assetImport`, `assetOperate`, `assetGetPreview` | Browse, create, and manage project assets |
-| **Editor** | `editorOperate`, `editorGetLogs`, `editorGetScenePreview` | Control editor state and capture previews |
+| **Assets** | `assetGetTree`, `assetGetAtPath`, `assetCreate`, `assetImport`, `assetOperate` | Browse, create, and manage project assets |
+| **Editor** | `editorOperate`, `editorGetLogs` | Control editor state and read logs |
 
 
 ## How It Works

@@ -1,8 +1,7 @@
-import packageJSON from '../../../package.json';
 import { utcpTool } from '../decorators';
 import * as fs from 'fs';
 import * as path from 'path';
-import { Base64ImageSchema, IBase64Image, ISuccessIndicator, SuccessIndicatorSchema } from '../schemas';
+import { ISuccessIndicator, SuccessIndicatorSchema } from '../schemas';
 
 export class EditorTools {
 
@@ -161,38 +160,4 @@ export class EditorTools {
         return { logLines: entries };
     }
 
-    @utcpTool(
-        'editorGetScenePreview',
-        'Returns preview image of scene view. IMPORTANT: To visualize the image, you must return the result of this function DIRECTLY as the final value of your code, do NOT wrap it in an object.',
-        {
-            type: 'object',
-            properties: {
-                imageSize: { type: 'object', properties: { width: { type: 'number', default: 512 }, height: { type: 'number', default: 512 } }, nullable: true },
-                jpegQuality: { type: 'integer', minimum: 40, maximum: 100, default: 80 },
-                cameraPosition: { type: 'object', properties: { x: { type: 'number' }, y: { type: 'number' }, z: { type: 'number' } }, required: ['x', 'y', 'z'], description: 'Camera world position'},
-                targetPosition: { type: 'object', properties: { x: { type: 'number' }, y: { type: 'number' }, z: { type: 'number' } }, required: ['x', 'y', 'z'], description: 'Point the camera looks at'},
-                orthographic: { type: 'boolean', default: false, description: 'Whether to use orthographic projection'},
-                orthographicSize: { type: 'number', default: 10, description: 'Orthographic size (only applies if orthographic is true)'}
-            },
-            required: ['cameraPosition', 'targetPosition']
-        },
-        Base64ImageSchema, "GET", ['scene', 'screenshot', 'preview', 'inspection', 'image']
-    )
-    async editorGetScenePreview(args: { 
-        imageSize?: { width: number, height: number }, 
-        jpegQuality?: number, 
-        cameraPosition?: { x: number, y: number, z: number }, 
-        targetPosition?: { x: number, y: number, z: number },
-        orthographic?: boolean,
-        orthographicSize?: number
-    }): Promise<IBase64Image> {
-
-        const result = await Editor.Message.request('scene', 'execute-scene-script', {
-            name: packageJSON.name,
-            method: 'captureScreenshot',
-            args: [args.imageSize ?? { width: 512, height: 512 }, args.jpegQuality ?? 80, args.cameraPosition , args.targetPosition, args.orthographic ?? false, args.orthographicSize ?? 10]
-        });
-
-        return { type: 'image', data: result, mimeType: 'image/jpeg' };
-    }
 }

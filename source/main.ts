@@ -11,10 +11,6 @@ export const methods: { [key: string]: (...any: any) => any } = {
         Editor.Panel.open(packageJSON.name + '.configuration');
     },
 
-    openPreviewPanel() {
-        Editor.Panel.open(packageJSON.name + '.preview');
-    },
-
 
     async restartServer(newPort: number) {
         if (utcpServer) {

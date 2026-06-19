@@ -1,6 +1,6 @@
 import packageJSON from '../../../package.json';
 import { utcpTool } from '../decorators';
-import { ISceneTreeItem, SceneTreeItemSchema, Base64ImageSchema, IBase64Image, InstanceReferenceSchema, IInstanceReference } from '../schemas';
+import { ISceneTreeItem, SceneTreeItemSchema, InstanceReferenceSchema, IInstanceReference } from '../schemas';
 
 export class SceneTools {
 
