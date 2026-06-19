@@ -8,10 +8,14 @@
   "scripts": {
     "preinstall": "node ./scripts/preinstall.js",
     "build": "npx tsc",
-    "package": "npm run build && node ./scripts/package.js"
+    "package": "npm run build && node ./scripts/package.js",
+    "install:skills": "node ./scripts/install-skills.js"
   },
   "description": "i18n:cocos-code-mode.description",
   "main": "./dist/main.js",
+  "bin": {
+    "cocos-code-mode-install-skills": "./scripts/install-skills.js"
+  },
   "dependencies": {
     "@utcp/http": "^1.1.0",
     "@utcp/sdk": "^1.1.0",
