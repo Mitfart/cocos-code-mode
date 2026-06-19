@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
+const { execFileSync } = require('child_process');
 
 // Read package.json to get the package name
 const packageJsonPath = path.join(__dirname, '../package.json');
@@ -38,19 +38,18 @@ if (missingItems.length > 0) {
 
 console.log(`Packaging project into ${zipFileName}...`);
 
-// Construct the zip command
-// zip -r outputFile inputFiles...
-// We execute this in the project root so paths are relative.
-const includeArgs = filesToInclude.map(f => `'${f}'`).join(' ');
-const command = `zip -r '${zipFileName}' ${includeArgs}`;
-
 try {
-    // Run the zip command
-    execSync(command, { 
-        cwd: projectRoot, 
-        stdio: 'inherit' 
-    });
-    console.log(`\nPackage created successfully: ${path.join(projectRoot, zipFileName)}`);
+    const zipPath = path.join(projectRoot, zipFileName);
+    if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
+
+    if (process.platform === 'win32') {
+        // ponytail: Windows ships tar.exe; avoid requiring Git/MSYS `zip`.
+        execFileSync('tar.exe', ['-a', '-cf', zipFileName, ...filesToInclude.map(f => `./${f}`)], { cwd: projectRoot, stdio: 'inherit' });
+    } else {
+        execFileSync('zip', ['-r', zipFileName, ...filesToInclude], { cwd: projectRoot, stdio: 'inherit' });
+    }
+
+    console.log(`\nPackage created successfully: ${zipPath}`);
 } catch (error) {
     console.error('Error creating package:', error.message);
     process.exit(1);
