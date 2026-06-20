@@ -5,7 +5,7 @@ import { getConfigManager } from './utcp/config-manager';
 let utcpServer: UtcpServerManager | null = null;
 
 
-export const methods: { [key: string]: (...any: any) => any } = {
+const methods: { [key: string]: (...any: any) => any } = {
 
     openPanel() {
         Editor.Panel.open(packageJSON.name + '.configuration');
@@ -30,7 +30,7 @@ export const methods: { [key: string]: (...any: any) => any } = {
     }
 };
 
-export async function load() {
+async function load() {
     // Initialize config manager
     const configManager = getConfigManager();
     await configManager.initialize();
@@ -61,7 +61,7 @@ export async function load() {
     }
 }
 
-export function unload() {
+function unload() {
     if (utcpServer) {
         console.log(`[${packageJSON.name}] Stopping UTCP Server...`);
         utcpServer.stop();
@@ -69,6 +69,7 @@ export function unload() {
     }
 }
 
-// Cocos 3.8.8 can miss TS named exports while resolving menu messages.
-// Keep explicit CommonJS shape for the extension loader.
-module.exports = { methods, load, unload };
+// Cocos extension loader reads CommonJS exports.
+exports.methods = methods;
+exports.load = load;
+exports.unload = unload;
