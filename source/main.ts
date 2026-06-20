@@ -57,7 +57,7 @@ export async function load() {
     }
 
     if (!wasConfiguredPort) {
-        Editor.Panel.open(packageJSON.name);
+        methods.openPanel();
     }
 }
 
@@ -68,3 +68,7 @@ export function unload() {
         utcpServer = null;
     }
 }
+
+// Cocos 3.8.8 can miss TS named exports while resolving menu messages.
+// Keep explicit CommonJS shape for the extension loader.
+module.exports = { methods, load, unload };
